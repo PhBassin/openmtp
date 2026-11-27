@@ -5,5 +5,6 @@ export const styles = (theme) => ({
     position: 'sticky',
     top: 0,
     zIndex: 10,
+    whiteSpace: 'nowrap',
   },
 });

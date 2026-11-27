@@ -3,12 +3,13 @@ import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import Checkbox from '@material-ui/core/Checkbox';
 import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
 // eslint-disable-next-line import/no-relative-packages
 import prettyFileIcons from '../../../vendors/pretty-file-icons';
-import { springTruncate } from '../../../utils/funcs';
-import { FILE_EXPLORER_GRID_TRUNCATE_MAX_CHARS } from '../../../constants';
-import { styles } from '../styles/FileExplorerTableBodyGridRender';
+import MiddleEllipsis from '../../../components/MiddleEllipsis';
+import {
+  styles,
+  GRID_FILE_NAME_MAX_LINES,
+} from '../styles/FileExplorerTableBodyGridRender';
 import { imgsrc } from '../../../utils/imgsrc';
 
 class FileExplorerTableBodyGridRender extends PureComponent {
@@ -84,11 +85,6 @@ class FileExplorerTableBodyGridRender extends PureComponent {
     } = this.props;
     const { RenderFileIcon, RenderFolderIcon } = this;
 
-    const fileName = springTruncate(
-      item.name,
-      FILE_EXPLORER_GRID_TRUNCATE_MAX_CHARS
-    );
-
     return (
       <div
         draggable="true"
@@ -127,15 +123,11 @@ class FileExplorerTableBodyGridRender extends PureComponent {
                 )
               }
             >
-              {fileName.isTruncated ? (
-                <Tooltip title={fileName.text}>
-                  <div className={styles.truncate}>
-                    {fileName.truncatedText}
-                  </div>
-                </Tooltip>
-              ) : (
-                fileName.text
-              )}
+              <MiddleEllipsis
+                text={item.name}
+                lines={GRID_FILE_NAME_MAX_LINES}
+                className={styles.itemFileNameText}
+              />
             </Typography>
           </div>
         </label>
