@@ -107,4 +107,12 @@ module.exports = {
     'react/prop-types': 'off',
     'react/no-deprecate': 'off',
   },
+  overrides: [
+    {
+      files: ['**/__tests__/**/*.js', '**/*.test.js'],
+      env: {
+        jest: true,
+      },
+    },
+  ],
 };
