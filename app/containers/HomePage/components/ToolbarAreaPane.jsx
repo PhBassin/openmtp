@@ -29,6 +29,7 @@ import {
 } from '../selectors';
 import {
   makeAppThemeMode,
+  makeFileExplorerListingType,
   makeHideHiddenFiles,
   makeMtpMode,
   makeShowLocalPaneOnLeftSide,
@@ -38,13 +39,17 @@ import {
   DEVICES_DEFAULT_PATH,
   SUPPORT_PAYPAL_URL,
 } from '../../../constants';
-import { selectMtpMode, toggleSettings } from '../../Settings/actions';
+import {
+  fileExplorerListingType as setFileExplorerListingType,
+  selectMtpMode,
+  toggleSettings,
+} from '../../Settings/actions';
 import { toggleWindowSizeOnDoubleClick } from '../../../helpers/titlebarDoubleClick';
 import ToolbarBody from './ToolbarBody';
 import { openExternalUrl } from '../../../utils/url';
 import { APP_GITHUB_URL } from '../../../constants/meta';
 import { pathUp } from '../../../utils/files';
-import { DEVICE_TYPE } from '../../../enums';
+import { DEVICE_TYPE, FILE_EXPLORER_VIEW_TYPE } from '../../../enums';
 import { log } from '../../../utils/log';
 import fileExplorerController from '../../../data/file-explorer/controllers/FileExplorerController';
 import { checkIf } from '../../../utils/checkIf';
@@ -237,6 +242,8 @@ class ToolbarAreaPane extends PureComponent {
       deviceType,
       hideHiddenFiles,
       actionCreateReloadDirList,
+      fileExplorerListingType,
+      actionCreateFileExplorerListingType,
     } = this.props;
 
     let filePath = '/';
@@ -266,6 +273,21 @@ class ToolbarAreaPane extends PureComponent {
         analyticsService.sendEvent(
           EVENT_TYPE[`${deviceTypeUpperCase}_${actionOrigin}_REFRESH`],
           {}
+        );
+
+        break;
+
+      case 'listingType':
+        // same persisted setting as the "View as grid" switch in Settings
+        actionCreateFileExplorerListingType(
+          {
+            value:
+              fileExplorerListingType[deviceType] ===
+              FILE_EXPLORER_VIEW_TYPE.list
+                ? FILE_EXPLORER_VIEW_TYPE.grid
+                : FILE_EXPLORER_VIEW_TYPE.list,
+          },
+          deviceType
         );
 
         break;
@@ -568,6 +590,12 @@ const mapDispatchToProps = (dispatch, _) =>
             selectMtpMode({ value, reportEvent: false }, deviceType, getState)
           );
         },
+      actionCreateFileExplorerListingType:
+        ({ value }, deviceType) =>
+        (_, getState) => {
+          dispatch(setFileExplorerListingType({ value }, deviceType, getState));
+        },
+
       actionCreateToggleSettings: (data) => (_, __) => {
         dispatch(toggleSettings(data));
       },
@@ -587,6 +615,7 @@ const mapStateToProps = (state, __) => {
     focussedFileExplorerDeviceType: makeFocussedFileExplorerDeviceType(state),
     appThemeMode: makeAppThemeMode(state),
     mtpMode: makeMtpMode(state),
+    fileExplorerListingType: makeFileExplorerListingType(state),
     showLocalPaneOnLeftSide: makeShowLocalPaneOnLeftSide(state),
   };
 };

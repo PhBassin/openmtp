@@ -11,6 +11,8 @@ import {
   faSdCard,
   faBolt,
   faTerminal,
+  faList,
+  faTh,
 } from '@fortawesome/free-solid-svg-icons';
 import SidebarAreaPaneLists from './SidebarAreaPaneLists';
 import { LazyLoaderOverlay } from '../styles/ToolbarAreaPane';
@@ -19,7 +21,7 @@ import {
   Confirm as ConfirmDialog,
   Selection as SelectionDialog,
 } from '../../../components/DialogBox';
-import { DEVICE_TYPE, MTP_MODE } from '../../../enums';
+import { DEVICE_TYPE, FILE_EXPLORER_VIEW_TYPE, MTP_MODE } from '../../../enums';
 import { capitalize, isEmpty } from '../../../utils/funcs';
 import { imgsrc } from '../../../utils/imgsrc';
 import { isKalamModeSupported } from '../../../helpers/binaries';
@@ -34,6 +36,7 @@ export default class ToolbarAreaPane extends PureComponent {
       mtpStoragesList,
       mtpDevice,
       mtpMode,
+      fileExplorerListingType,
     } = args;
 
     const _directoryLists = directoryLists[deviceType];
@@ -61,6 +64,18 @@ export default class ToolbarAreaPane extends PureComponent {
         case 'refresh':
           _activeToolbarList[a] = {
             ...item,
+            enabled,
+          };
+          break;
+
+        case 'listingType':
+          // the button shows the view it switches to
+          _activeToolbarList[a] = {
+            ...item,
+            ...(fileExplorerListingType?.[deviceType] ===
+            FILE_EXPLORER_VIEW_TYPE.list
+              ? { label: 'Grid view', icon: faTh }
+              : { label: 'List view', icon: faList }),
             enabled,
           };
           break;
@@ -130,6 +145,7 @@ export default class ToolbarAreaPane extends PureComponent {
       onToolbarAction,
       showLocalPaneOnLeftSide,
       mtpMode,
+      fileExplorerListingType,
     } = this.props;
 
     const _toolbarList = this.activeToolbarList({
@@ -140,6 +156,7 @@ export default class ToolbarAreaPane extends PureComponent {
       mtpStoragesList,
       mtpDevice,
       mtpMode,
+      fileExplorerListingType,
     });
 
     const RenderLazyLoaderOverlay = LazyLoaderOverlay({ appThemeMode });

@@ -6,6 +6,7 @@ import {
   faPlug,
   faArrowLeft,
   faQuestionCircle,
+  faList,
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub, faPaypal } from '@fortawesome/free-brands-svg-icons';
 import { actionTypes } from './actions';
@@ -76,6 +77,12 @@ export const initialState = {
         label: 'Refresh',
         icon: faSync,
       },
+      // label and icon are updated in ToolbarBody to reflect the current listing type
+      listingType: {
+        enabled: true,
+        label: 'List view',
+        icon: faList,
+      },
       delete: {
         enabled: true,
         label: 'Delete',
@@ -107,6 +114,12 @@ export const initialState = {
         enabled: true,
         label: 'Refresh',
         icon: faSync,
+      },
+      // label and icon are updated in ToolbarBody to reflect the current listing type
+      listingType: {
+        enabled: true,
+        label: 'List view',
+        icon: faList,
       },
       delete: {
         enabled: true,
