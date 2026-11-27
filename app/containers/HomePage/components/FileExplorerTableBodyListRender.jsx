@@ -3,10 +3,9 @@ import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import Checkbox from '@material-ui/core/Checkbox';
-import Tooltip from '@material-ui/core/Tooltip';
 import classNames from 'classnames';
-import { niceBytes, springTruncate } from '../../../utils/funcs';
-import { FILE_EXPLORER_TABLE_TRUNCATE_MAX_CHARS } from '../../../constants';
+import { niceBytes } from '../../../utils/funcs';
+import MiddleEllipsis from '../../../components/MiddleEllipsis';
 import { styles } from '../styles/FileExplorerTableBodyListRender';
 // eslint-disable-next-line import/no-relative-packages
 import prettyFileIcons from '../../../vendors/pretty-file-icons';
@@ -60,11 +59,6 @@ class FileExplorerTableBodyListRender extends PureComponent {
 
     const { RenderFileIcon, RenderFolderIcon } = this;
 
-    const fileName = springTruncate(
-      item.name,
-      FILE_EXPLORER_TABLE_TRUNCATE_MAX_CHARS
-    );
-
     return (
       <TableRow
         draggable
@@ -116,15 +110,14 @@ class FileExplorerTableBodyListRender extends PureComponent {
               onTableDoubleClick(item, deviceType, event)
             }
           >
-            {item.isFolder ? <RenderFolderIcon /> : <RenderFileIcon />}
-            &nbsp;&nbsp;
-            {fileName.isTruncated ? (
-              <Tooltip title={fileName.text}>
-                <div className={styles.truncate}>{fileName.truncatedText}</div>
-              </Tooltip>
-            ) : (
-              fileName.text
-            )}
+            <div className={styles.nameCellInner}>
+              {item.isFolder ? <RenderFolderIcon /> : <RenderFileIcon />}
+              <MiddleEllipsis
+                text={item.name}
+                className={styles.fileName}
+                tooltipPlacement="bottom-start"
+              />
+            </div>
           </TableCell>
         )}
         {hideColList.indexOf('size') < 0 && (

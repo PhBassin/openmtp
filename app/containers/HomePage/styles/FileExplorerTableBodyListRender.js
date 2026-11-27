@@ -4,11 +4,12 @@ export const tableCellFileExplorerTableRowsRender = {
     width: 50,
   },
   [`&.nameCell`]: {
-    display: 'flex',
-    alignItems: 'center',
+    // `width: 100%` + `maxWidth: 0` lets the name column take all the
+    // remaining width of the table while size/date keep their content width
+    width: `100%`,
+    maxWidth: 0,
     whiteSpace: `nowrap`,
     overflow: `hidden`,
-    textOverflow: `ellipsis`,
   },
   [`&.sizeCell`]: {
     whiteSpace: `nowrap`,
@@ -34,6 +35,7 @@ export const styles = (_) => {
     },
     tableCell: tableCellFileExplorerTableRowsRender,
     fileTypeIconWrapper: {
+      flexShrink: 0,
       paddingTop: 5,
       paddingBottom: 5,
       paddingLeft: 2,
@@ -44,10 +46,16 @@ export const styles = (_) => {
       height: 20,
       width: 'auto',
     },
-    truncate: {
-      textOverflow: 'ellipsis',
+    nameCellInner: {
+      display: 'flex',
+      alignItems: 'center',
+      minWidth: 0,
+    },
+    fileName: {
+      flex: '1 1 0',
+      minWidth: 0,
+      marginLeft: 8,
       overflow: 'hidden',
-      maxWidth: 310,
       whiteSpace: 'nowrap',
     },
   };

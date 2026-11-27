@@ -27,6 +27,7 @@
     "publish-mac-no-verify": "yarn build-no-verify && cross-env dotenv -- electron-builder --config electron-builder-config.js build --mac --publish always",
     "dev-docs": "cross-env NODE_ENV=development webpack serve --config docs-sources/webpack/webpack.config.base.js",
     "build-docs": "cross-env NODE_ENV=production webpack --config docs-sources/webpack/webpack.config.base.js && git add .",
+    "test": "cross-env NODE_ENV=test jest",
     "lint": "cross-env NODE_ENV=development eslint --cache . --format=pretty --ext .js,.jsx",
     "lint-styles": "stylelint --ignore-path .eslintignore '**/*.*(css|scss)' --custom-syntax postcss-scss",
     "lint-fix": "yarn --silent lint --fix; exit 0",
@@ -58,6 +59,15 @@
     "mtp"
   ],
   "homepage": "https://openmtp.ganeshrvel.com/",
+  "jest": {
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/app"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ]
+  },
   "browserslist": {
     "production": [
       "last 2 Chrome versions"
@@ -159,6 +169,7 @@
     "axios": "^1.6.8",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "^10.1.0",
+    "babel-jest": "27.5.1",
     "babel-loader": "^8.2.2",
     "babel-plugin-dev-expression": "^0.2.3",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
@@ -190,6 +201,7 @@
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.0",
     "husky": "^4.3.8",
+    "jest": "27.5.1",
     "js-yaml": "^4.1.0",
     "lint-staged": "^13.0.3",
     "mini-css-extract-plugin": "^2.6.1",

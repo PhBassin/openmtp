@@ -49,10 +49,6 @@ export const LOG_FILE_ROTATION_CLEANUP_THRESHOLD = 60; // in days
 
 export const AUTO_UPDATE_CHECK_FIREUP_DELAY = 10000; // in ms
 
-export const FILE_EXPLORER_TABLE_TRUNCATE_MAX_CHARS = 37;
-
-export const FILE_EXPLORER_GRID_TRUNCATE_MAX_CHARS = 20;
-
 export const SUPPORT_PAYPAL_URL = `https://paypal.me/ganeshrvel`;
 
 export const BUY_ME_A_COFFEE_URL = `https://www.buymeacoffee.com/ganeshrvel`;
