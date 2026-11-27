@@ -86,6 +86,20 @@ describe('middleEllipsis', () => {
     expect(fitsIn(result.truncatedText, 80)).toBe(true);
   });
 
+  it('keeps the whole extension with a single leading grapheme', () => {
+    const result = middleEllipsis('a_really_long_file_name.jpeg', 70, measure);
+
+    expect(result.truncatedText).toBe(`a${MIDDLE_ELLIPSIS}.jpeg`);
+  });
+
+  it('splits evenly when the whole extension does not fit', () => {
+    const result = middleEllipsis('a_really_long_file_name.jpeg', 40, measure);
+
+    // the start of the name, not a meaningless "…peg"
+    expect(result.truncatedText).toBe(`a_${MIDDLE_ELLIPSIS}g`);
+    expect(fitsIn(result.truncatedText, 40)).toBe(true);
+  });
+
   it('splits evenly names without extension', () => {
     const result = middleEllipsis('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 90, measure);
 

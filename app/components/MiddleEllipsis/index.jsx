@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
 import Tooltip from '@material-ui/core/Tooltip';
 import { middleEllipsis, splitGraphemes } from '../../utils/middleEllipsis';
 
@@ -177,12 +177,12 @@ const observeWidth = (el, callback) => {
 };
 
 function MiddleEllipsis({ text, lines = 1, className, tooltipPlacement }) {
-  const ref = useRef(null);
+  // callback ref: the span is remounted when the Tooltip wrapper comes and
+  // goes, and the observers must follow the new element
+  const [el, setEl] = useState(null);
   const [box, setBox] = useState(null);
 
   useLayoutEffect(() => {
-    const el = ref.current;
-
     if (!el) {
       return undefined;
     }
@@ -216,7 +216,7 @@ function MiddleEllipsis({ text, lines = 1, className, tooltipPlacement }) {
       unobserveWidth();
       unwatchFonts();
     };
-  }, []);
+  }, [el]);
 
   const result = useMemo(() => {
     if (!box || box.width <= 0) {
@@ -233,14 +233,20 @@ function MiddleEllipsis({ text, lines = 1, className, tooltipPlacement }) {
     });
   }, [text, box, lines]);
 
+  const content = (
+    <span ref={setEl} className={className}>
+      {result.truncatedText}
+    </span>
+  );
+
+  // no Tooltip for names shown in full: folders may list thousands of rows
+  if (!result.isTruncated) {
+    return content;
+  }
+
   return (
-    <Tooltip
-      title={result.isTruncated ? text : ''}
-      placement={tooltipPlacement}
-    >
-      <span ref={ref} className={className}>
-        {result.truncatedText}
-      </span>
+    <Tooltip title={text} placement={tooltipPlacement}>
+      {content}
     </Tooltip>
   );
 }

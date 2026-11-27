@@ -61,15 +61,23 @@ export const extensionLength = (graphemes) => {
 
 /**
  * For a total number of kept graphemes `keep`, how many go to the tail.
- * Both head and tail lengths never decrease when `keep` grows, which keeps
- * the rendered width monotonic and allows a binary search.
+ * The whole extension is kept as soon as there is room for it plus at least
+ * one leading grapheme; below that a partial extension ("…peg") would be
+ * meaningless, so the room is split evenly to keep the start of the name.
+ *
+ * The result always holds `keep` graphemes, so its width grows with `keep`
+ * (up to kerning), which allows a binary search.
  *
  * @param {number} keep
  * @param {number} extLength
  * @returns {number}
  */
 const tailLengthFor = (keep, extLength) => {
-  return Math.max(Math.floor(keep / 2), Math.min(keep, extLength));
+  if (keep <= extLength) {
+    return Math.floor(keep / 2);
+  }
+
+  return Math.max(Math.floor(keep / 2), extLength);
 };
 
 const build = (graphemes, keep, extLength, ellipsis) => {

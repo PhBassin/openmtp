@@ -41,7 +41,8 @@ export default class ToolbarAreaPane extends PureComponent {
 
     const _directoryLists = directoryLists[deviceType];
     const _currentBrowsePath = currentBrowsePath[deviceType];
-    const _activeToolbarList = toolbarList[deviceType];
+    // copy: never mutate the redux state (nor its initialState)
+    const _activeToolbarList = { ...toolbarList[deviceType] };
     const isMtp = deviceType === DEVICE_TYPE.mtp;
 
     let enabled = true;
