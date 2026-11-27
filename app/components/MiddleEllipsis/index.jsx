@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Tooltip from '@material-ui/core/Tooltip';
-import { middleEllipsis } from '../../utils/middleEllipsis';
+import { middleEllipsis, splitGraphemes } from '../../utils/middleEllipsis';
 
 /**
  * Renders a text truncated in the middle (Finder style) according to the
@@ -14,6 +14,11 @@ import { middleEllipsis } from '../../utils/middleEllipsis';
  * - a single shared ResizeObserver is used for every instance;
  * - text widths are measured with a shared canvas and cached per font;
  * - truncation results are cached per (font, width, lines, text).
+ *
+ * Canvas `measureText` ignores CSS `letter-spacing`, so it is added by hand.
+ * Widths measured before a web font (eg: Roboto) has loaded are measured
+ * with a fallback font: every cache is cleared and every instance re-reads
+ * its font once the document fonts finish loading.
  */
 
 const MAX_CACHE_ENTRIES = 20000;
@@ -38,8 +43,8 @@ const getCanvasContext = () => {
   return canvasContext;
 };
 
-const measureFactory = (font) => (str) => {
-  const key = `${font}\u0000${str}`;
+const measureFactory = (font, letterSpacing) => (str) => {
+  const key = `${font}\u0000${letterSpacing}\u0000${str}`;
   const cached = widthCache.get(key);
 
   if (typeof cached !== 'undefined') {
@@ -49,15 +54,18 @@ const measureFactory = (font) => (str) => {
   const ctx = getCanvasContext();
 
   ctx.font = font;
-  const { width } = ctx.measureText(str);
+  // CSS applies `letter-spacing` after every character, canvas does not
+  const width =
+    ctx.measureText(str).width +
+    (letterSpacing ? letterSpacing * splitGraphemes(str).length : 0);
 
   setBounded(widthCache, key, width);
 
   return width;
 };
 
-const truncate = ({ text, width, font, fontSize, lines }) => {
-  const key = `${font}\u0000${width}\u0000${lines}\u0000${text}`;
+const truncate = ({ text, width, font, fontSize, letterSpacing, lines }) => {
+  const key = `${font}\u0000${letterSpacing}\u0000${width}\u0000${lines}\u0000${text}`;
   const cached = resultCache.get(key);
 
   if (cached) {
@@ -68,7 +76,11 @@ const truncate = ({ text, width, font, fontSize, lines }) => {
   // character width; keep one font size of slack per line to stay safe.
   const budget =
     lines > 1 ? Math.max(0, lines * (width - fontSize)) : Math.max(0, width);
-  const result = middleEllipsis(text, budget, measureFactory(font));
+  const result = middleEllipsis(
+    text,
+    budget,
+    measureFactory(font, letterSpacing)
+  );
 
   setBounded(resultCache, key, result);
 
@@ -84,6 +96,45 @@ const readFont = (el) => {
   return {
     font,
     fontSize: parseFloat(style.fontSize) || 0,
+    // `normal` parses to NaN, ie: no extra spacing
+    letterSpacing: parseFloat(style.letterSpacing) || 0,
+  };
+};
+
+// ---- web font loading ----
+const fontChangeListeners = new Set();
+let fontsWatched = false;
+
+const onFontsLoaded = () => {
+  widthCache.clear();
+  resultCache.clear();
+  fontChangeListeners.forEach((listener) => listener());
+};
+
+const watchFonts = () => {
+  const { fonts } = document;
+
+  if (fontsWatched || !fonts) {
+    return;
+  }
+
+  fontsWatched = true;
+
+  if (typeof fonts.addEventListener === 'function') {
+    fonts.addEventListener('loadingdone', onFontsLoaded);
+  }
+
+  if (fonts.ready && typeof fonts.ready.then === 'function') {
+    fonts.ready.then(onFontsLoaded).catch(() => {});
+  }
+};
+
+const onFontChange = (listener) => {
+  watchFonts();
+  fontChangeListeners.add(listener);
+
+  return () => {
+    fontChangeListeners.delete(listener);
   };
 };
 
@@ -136,7 +187,7 @@ function MiddleEllipsis({ text, lines = 1, className, tooltipPlacement }) {
       return undefined;
     }
 
-    return observeWidth(el, (rawWidth) => {
+    const unobserveWidth = observeWidth(el, (rawWidth) => {
       const width = Math.floor(rawWidth);
 
       setBox((prev) => {
@@ -145,12 +196,26 @@ function MiddleEllipsis({ text, lines = 1, className, tooltipPlacement }) {
         }
 
         const fontInfo = prev?.font
-          ? { font: prev.font, fontSize: prev.fontSize }
+          ? {
+              font: prev.font,
+              fontSize: prev.fontSize,
+              letterSpacing: prev.letterSpacing,
+            }
           : readFont(el);
 
         return { ...fontInfo, width };
       });
     });
+
+    // the caches were cleared: re-read the font and truncate again
+    const unwatchFonts = onFontChange(() => {
+      setBox((prev) => (prev ? { ...readFont(el), width: prev.width } : prev));
+    });
+
+    return () => {
+      unobserveWidth();
+      unwatchFonts();
+    };
   }, []);
 
   const result = useMemo(() => {
@@ -163,6 +228,7 @@ function MiddleEllipsis({ text, lines = 1, className, tooltipPlacement }) {
       width: box.width,
       font: box.font,
       fontSize: box.fontSize,
+      letterSpacing: box.letterSpacing,
       lines,
     });
   }, [text, box, lines]);
